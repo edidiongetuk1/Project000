@@ -607,3 +607,4 @@ Sigma rules are licensed under the **Sigma License Agreement** (permissive for s
 ---
 
 **⭐ If this project helped you, please star it on GitHub and share with your security community!**
+

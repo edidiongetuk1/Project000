@@ -1,0 +1,25 @@
+# Secrets - NEVER commit these
+*.pem
+*.key
+wazuh-lab-inventory.txt
+.env
+aws-credentials*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and test output (keep summaries, not raw dumps)
+*.log
+atomic-red-team/test-results/*.dmp
+atomic-red-team/test-results/*.bin
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+
+# Python (if using sigma-cli locally)
+__pycache__/
+*.pyc
+venv/
