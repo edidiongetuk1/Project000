@@ -602,7 +602,7 @@ Sigma rules are licensed under the **Sigma License Agreement** (permissive for s
 - Atomic Red Team / Red Canary for attack simulation framework
 - SigmaHQ for detection rule standards
 - MITRE ATT&CK for threat taxonomy
-- Your cybersecurity mentor / instructor for guidance
+- My cybersecurity mentor / instructor for guidance  [MR. DANIEL]
 
 ---
 
