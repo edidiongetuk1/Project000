@@ -586,12 +586,12 @@ Sigma rules are licensed under the **Sigma License Agreement** (permissive for s
 
 ## Author & Contact
 
-**Project Lead:** [Your Name]  
-**Email:** [your.email@example.com]  
+**Project Lead:** [Edidiong Etuk]  
+**Email:** [edidiongetuk11@gmail.com]  
 **LinkedIn:** [linkedin.com/in/yourprofile](https://linkedin.com)  
-**GitHub:** [@yourusername](https://github.com/yourusername)  
+**GitHub:** [@yourusername](https://github.com/edidiongetuk1)  
 
-**Last Updated:** June 2024  
+**Last Updated:** June 2026
 **Lab Status:** Active, accepting contributions
 
 ---
