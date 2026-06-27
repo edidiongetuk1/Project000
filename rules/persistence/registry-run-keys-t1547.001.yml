@@ -1,0 +1,42 @@
+title: Suspicious Registry Run Key Modification (T1547.001)
+id: a1b2c3d4-1003-4a5b-c6d7-e8f9a0b1c2d5
+status: production
+description: |
+  Detects new or modified values written to common autorun registry keys
+  (Run / RunOnce), a frequent persistence mechanism on Windows.
+author: Blue Team Lab
+date: 2026-06-23
+modified: 2026-06-23
+
+logsource:
+  product: windows
+  service: sysmon
+
+detection:
+  selection:
+    EventID: 13   # RegistryEvent (Value Set)
+    TargetObject|contains:
+      - '\Software\Microsoft\Windows\CurrentVersion\Run'
+      - '\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+      - '\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run'
+
+  filter_known_installers:
+    Image|contains:
+      - 'C:\Windows\System32\msiexec.exe'
+      - 'C:\Program Files\Windows Defender\'
+
+  condition: selection and not filter_known_installers
+
+falsepositives:
+  - Legitimate software installers registering startup entries
+  - IT-deployed configuration management tools (SCCM, Intune)
+
+level: medium
+
+tags:
+  - attack.persistence
+  - attack.t1547.001
+  - attack.t1547
+
+references:
+  - https://attack.mitre.org/techniques/T1547/001/

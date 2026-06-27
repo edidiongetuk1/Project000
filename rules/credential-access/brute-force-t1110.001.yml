@@ -1,0 +1,35 @@
+title: Brute Force Authentication Attempts (T1110.001)
+id: a1b2c3d4-1002-4a5b-c6d7-e8f9a0b1c2d4
+status: production
+description: |
+  Detects a high volume of failed authentication attempts (Windows Event ID
+  4625) against a single account or from a single source within a short
+  window, indicative of password guessing / brute force activity.
+author: Blue Team Lab
+date: 2026-06-23
+modified: 2026-06-23
+
+logsource:
+  product: windows
+  service: security
+
+detection:
+  selection:
+    EventID: 4625
+  timeframe: 5m
+  condition: selection | count(TargetUserName) by IpAddress > 10
+
+falsepositives:
+  - Misconfigured service accounts with outdated stored credentials
+  - Shared workstation with multiple users mistyping passwords
+  - Vulnerability scanners or pentest engagements (expected during exercises)
+
+level: high
+
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+  - attack.t1110
+
+references:
+  - https://attack.mitre.org/techniques/T1110/001/

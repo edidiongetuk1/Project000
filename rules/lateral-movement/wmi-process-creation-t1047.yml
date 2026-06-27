@@ -1,0 +1,44 @@
+title: Lateral Movement via WMI Process Creation (T1047)
+id: a1b2c3d4-1005-4a5b-c6d7-e8f9a0b1c2d7
+status: production
+description: |
+  Detects process creation events where WmiPrvSE.exe is the parent process
+  and the spawned process is a command shell or scripting interpreter,
+  indicating remote WMI-based command execution (e.g. wmic /node).
+author: Blue Team Lab
+date: 2026-06-23
+modified: 2026-06-23
+
+logsource:
+  product: windows
+  service: sysmon
+
+detection:
+  selection:
+    EventID: 1
+    ParentImage|endswith: '\WmiPrvSE.exe'
+    Image|endswith:
+      - '\cmd.exe'
+      - '\powershell.exe'
+      - '\powershell_ise.exe'
+
+  filter_known_management:
+    CommandLine|contains:
+      - 'SCCM'
+      - 'Configuration Manager'
+
+  condition: selection and not filter_known_management
+
+falsepositives:
+  - Legitimate remote systems management tools (SCCM, monitoring agents) that use WMI
+  - Scheduled inventory/health-check scripts triggered via WMI
+
+level: high
+
+tags:
+  - attack.lateral_movement
+  - attack.execution
+  - attack.t1047
+
+references:
+  - https://attack.mitre.org/techniques/T1047/

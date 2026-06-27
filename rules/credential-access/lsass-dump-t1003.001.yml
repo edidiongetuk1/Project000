@@ -1,0 +1,53 @@
+title: Suspicious Process Execution for LSASS Dump (T1003.001)
+id: a1b2c3d4-1001-4a5b-c6d7-e8f9a0b1c2d3
+status: production
+description: |
+  Detects suspicious process execution patterns consistent with LSASS memory
+  dumping via rundll32+comsvcs.dll, procdump, or werfault targeting lsass.exe.
+author: Blue Team Lab
+date: 2026-06-23
+modified: 2026-06-23
+
+logsource:
+  product: windows
+  service: sysmon
+
+detection:
+  selection_rundll32:
+    EventID: 1
+    Image|endswith: '\rundll32.exe'
+    CommandLine|contains|all:
+      - 'comsvcs.dll'
+      - 'MiniDump'
+
+  selection_werfault:
+    EventID: 1
+    Image|endswith: '\werfault.exe'
+    CommandLine|contains: 'lsass.exe'
+
+  selection_procdump:
+    EventID: 1
+    Image|endswith: '\procdump.exe'
+    CommandLine|contains: 'lsass'
+
+  filter_legitimate:
+    Image|contains:
+      - 'C:\Program Files\Windows Defender\'
+      - 'C:\Program Files\Sentry\'
+
+  condition: (selection_rundll32 or selection_werfault or selection_procdump) and not filter_legitimate
+
+falsepositives:
+  - Legitimate memory dump tools (procdump) used by Microsoft/vendor support
+  - Authorized backup/archival tools accessing lsass memory
+  - Windows error reporting legitimate crashes (werfault)
+
+level: critical
+
+tags:
+  - attack.credential_access
+  - attack.t1003.001
+  - attack.t1003
+
+references:
+  - https://attack.mitre.org/techniques/T1003/001/

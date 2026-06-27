@@ -1,0 +1,45 @@
+title: Rundll32 Suspicious Proxy Execution (T1218.014)
+id: a1b2c3d4-1004-4a5b-c6d7-e8f9a0b1c2d6
+status: production
+description: |
+  Detects rundll32.exe invoked with parameters commonly used to proxy
+  execution of malicious code (e.g. shellcode loaders, JavaScript via
+  scrobj.dll, or unusual exported function calls).
+author: Blue Team Lab
+date: 2026-06-23
+modified: 2026-06-23
+
+logsource:
+  product: windows
+  service: sysmon
+
+detection:
+  selection:
+    EventID: 1
+    Image|endswith: '\rundll32.exe'
+    CommandLine|contains:
+      - 'javascript:'
+      - 'scrobj.dll'
+      - '-nop'
+      - '-w hidden'
+      - '-enc'
+
+  filter_docker:
+    Image|contains: 'C:\Program Files\Docker\'
+
+  condition: selection and not filter_docker
+
+falsepositives:
+  - System administrators running legitimate scripted automation
+  - Authorized software deployment tools that wrap rundll32 calls
+
+level: high
+
+tags:
+  - attack.defense_evasion
+  - attack.execution
+  - attack.t1218.014
+  - attack.t1059.001
+
+references:
+  - https://attack.mitre.org/techniques/T1218/014/

@@ -1,0 +1,119 @@
+<!--
+  Wazuh Custom Local Rules
+  Copy this file to: /var/ossec/etc/rules/local_rules.xml on the manager,
+  then restart the manager: sudo systemctl restart wazuh-manager
+
+  Rule ID ranges 100100-100199 are reserved for this lab's custom rules
+  to avoid colliding with Wazuh's built-in rule IDs.
+
+  These are hand-translated equivalents of the Sigma rules in /rules,
+  written in Wazuh's native XML rule syntax so they work out of the box
+  without needing the sigma-cli converter.
+-->
+
+<group name="local,custom,blue_team_lab,">
+
+  <!-- ===================================================================
+       T1003.001 - LSASS Memory Dump Detection
+       =================================================================== -->
+  <rule id="100100" level="15">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)rundll32\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)comsvcs\.dll.*MiniDump</field>
+    <description>LSASS memory dump attempt via rundll32 + comsvcs.dll (T1003.001)</description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>credential_access,</group>
+  </rule>
+
+  <rule id="100101" level="15">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)(procdump|werfault)\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)lsass</field>
+    <description>LSASS memory dump attempt via procdump/werfault (T1003.001)</description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>credential_access,</group>
+  </rule>
+
+  <rule id="100102" level="0">
+    <if_sid>100100,100101</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)(Windows Defender|Sentry)</field>
+    <description>Whitelisted: legitimate AV/EDR memory access (suppressed)</description>
+  </rule>
+
+  <!-- ===================================================================
+       T1110.001 - Brute Force Authentication
+       =================================================================== -->
+  <rule id="100110" level="10" frequency="10" timeframe="300">
+    <if_matched_sid>60122</if_matched_sid>
+    <same_source_ip />
+    <description>Possible brute force: 10+ failed logons from same source IP in 5 minutes (T1110.001)</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+    <group>credential_access,authentication_failures,</group>
+  </rule>
+
+  <!-- ===================================================================
+       T1547.001 - Registry Run Key Persistence
+       =================================================================== -->
+  <rule id="100120" level="10">
+    <if_group>sysmon_event13</if_group>
+    <field name="win.eventdata.targetObject" type="pcre2">(?i)\\Run(Once)?\\</field>
+    <description>Suspicious registry Run/RunOnce key modification (T1547.001)</description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <group>persistence,</group>
+  </rule>
+
+  <rule id="100121" level="0">
+    <if_sid>100120</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)(msiexec\.exe|Windows Defender)</field>
+    <description>Whitelisted: known installer registering startup entry (suppressed)</description>
+  </rule>
+
+  <!-- ===================================================================
+       T1218.014 - Rundll32 Proxy Execution
+       =================================================================== -->
+  <rule id="100130" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)rundll32\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(javascript:|scrobj\.dll|-nop|-w hidden|-enc)</field>
+    <description>Rundll32 proxy execution with suspicious parameters (T1218.014)</description>
+    <mitre>
+      <id>T1218.014</id>
+    </mitre>
+    <group>defense_evasion,execution,</group>
+  </rule>
+
+  <rule id="100131" level="0">
+    <if_sid>100130</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)Docker</field>
+    <description>Whitelisted: Docker for Windows legitimate rundll32 usage (suppressed)</description>
+  </rule>
+
+  <!-- ===================================================================
+       T1047 - Lateral Movement via WMI
+       =================================================================== -->
+  <rule id="100140" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)WmiPrvSE\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2">(?i)(cmd\.exe|powershell(_ise)?\.exe)$</field>
+    <description>Possible lateral movement: WMI spawned a command shell (T1047)</description>
+    <mitre>
+      <id>T1047</id>
+    </mitre>
+    <group>lateral_movement,execution,</group>
+  </rule>
+
+  <rule id="100141" level="0">
+    <if_sid>100140</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(SCCM|Configuration Manager)</field>
+    <description>Whitelisted: known SCCM WMI activity (suppressed)</description>
+  </rule>
+
+</group>
